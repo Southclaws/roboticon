@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Friendly robot avatars grown from stable seeds. A tiny Go library, running live in your browser.">
+  <title>Roboticon · the little robot workshop</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" type="module"></script>
+</head>
+<body>
+  <header>
+    <div class="topline"><a class="wordmark" href="./">ROBOTICON / THE LITTLE ROBOT WORKSHOP</a><a href="https://github.com/Southclaws/roboticon">Source code ↗</a></div>
+    <h1>A few friendly faces.</h1>
+    <p class="intro">Little robots, grown from stable seeds. Find a face for your corner of the internet.</p>
+  </header>
+  <section class="workbench" aria-label="Avatar creator">
+    <div class="hero"><div id="hero" class="avatar"></div><span id="hero-seed"></span></div>
+    <div class="editor">
+      <label for="seed">Give your robot a name</label>
+      <div class="seed-row"><input id="seed" value="hello, robot" autocomplete="off" spellcheck="false"><button id="shuffle" title="Try a random seed" disabled>Surprise me ↗</button></div>
+      <div class="options"><label><input id="transparent" type="checkbox">Transparent background</label><label><input id="circle" type="checkbox">Preview circle crop</label></div>
+      <div id="sizes" class="sizes" aria-label="Avatar size previews"></div>
+      <div class="downloads"><label for="size">Download size</label><select id="size"><option>64</option><option>128</option><option selected>256</option><option>512</option><option>1024</option></select><button id="png" disabled>Download PNG</button><button id="svg" disabled>Download SVG</button></div>
+      <p class="note">Circle crop is a preview. Downloads stay square, with room for ears and antennae.</p>
+    </div>
+  </section>
+  <section class="collection" aria-label="Robot gallery">
+    <div class="collection-heading"><div><h2>Meet the neighbourhood.</h2><p>200 personalities. Pick one to make it yours.</p></div><button id="batch" disabled>A new neighbourhood ↗</button></div>
+    <p id="status" role="status" aria-live="polite">Waking up the robot workshop…</p>
+    <div id="gallery" class="grid"></div>
+  </section>
+  <footer>Made with <a href="https://github.com/Southclaws/roboticon">Roboticon</a>. The real Go library runs locally in your browser through WebAssembly. Seeds stay on your device.</footer>
+</body>
+</html>
