@@ -11,6 +11,7 @@ import (
 func TestTransparentBackground(t *testing.T) {
 	r := Generate("robot-a")
 	r.Antenna = AntennaLoop
+	r.Proportions = ProportionsBalanced
 	before := r
 	var b bytes.Buffer
 	if err := r.RenderPNG(&b, 128, TransparentBackground); err != nil {

@@ -10,13 +10,19 @@ import (
 // Robot is a size-independent description of an avatar. It is comparable and
 // contains no hidden random state. Render methods do not modify it.
 type Robot struct {
-	Head      Head
-	Eyes      Eyes
-	Mouth     Mouth
-	Antenna   Antenna
-	Ears      Ears
-	Accessory Accessory
-	Palette   Palette
+	Head        Head
+	Eyes        Eyes
+	Mouth       Mouth
+	Antenna     Antenna
+	Ears        Ears
+	Accessory   Accessory
+	Palette     Palette
+	Proportions Proportions
+	FacePanel   FacePanel
+	EyeSpacing  EyeSpacing
+	EyeHeight   EyeHeight
+	Cheeks      Cheeks
+	Marking     Marking
 }
 
 type Head uint8
@@ -76,9 +82,66 @@ type Accessory uint8
 
 const (
 	AccessoryNone Accessory = iota
-	AccessoryBlush
-	AccessoryFreckles
 	AccessoryBadge
+	AccessoryButton
+	AccessoryHeart
+)
+
+// Proportions selects a curated shell/face scale preset, not arbitrary geometry.
+type Proportions uint8
+
+const (
+	ProportionsBalanced Proportions = iota
+	ProportionsChonky
+	ProportionsBean
+	ProportionsBigHead
+)
+
+type FacePanel uint8
+
+const (
+	FacePanelRounded FacePanel = iota
+	FacePanelPill
+	FacePanelTall
+	FacePanelWide
+)
+
+type EyeSpacing uint8
+
+const (
+	EyeSpacingNormal EyeSpacing = iota
+	EyeSpacingNarrow
+	EyeSpacingWide
+)
+
+type EyeHeight uint8
+
+const (
+	EyeHeightNormal EyeHeight = iota
+	EyeHeightHigh
+	EyeHeightLow
+)
+
+type Cheeks uint8
+
+const (
+	CheeksNone Cheeks = iota
+	CheeksDots
+	CheeksBlush
+	CheeksLines
+)
+
+type Marking uint8
+
+const (
+	MarkingNone Marking = iota
+	MarkingBolts
+	MarkingSerialDots
+	MarkingForeheadPanel
+	MarkingVents
+	MarkingSeam
+	MarkingChinStripe
+	MarkingTempleDots
 )
 
 // Palette uses concrete RGBA values so Robots can be compared with ==. All
@@ -108,7 +171,13 @@ func Generate(seed string) Robot {
 		Head: Head(pick("head", 5)), Eyes: Eyes(pick("eyes", 8)),
 		Mouth: Mouth(pick("mouth", 6)), Antenna: Antenna(pick("antenna", 5)),
 		Ears: Ears(pick("ears", 4)), Accessory: accessory,
-		Palette: palettes[pick("palette", uint64(len(palettes)))],
+		Palette:     palettes[pick("palette", uint64(len(palettes)))],
+		Proportions: Proportions(pick("proportions", 4)),
+		FacePanel:   FacePanel(pick("face-panel", 4)),
+		EyeSpacing:  EyeSpacing(pick("eye-spacing", 3)),
+		EyeHeight:   EyeHeight(pick("eye-height", 3)),
+		Cheeks:      Cheeks(pick("cheeks", 4)),
+		Marking:     Marking(pick("marking", 8)),
 	}
 }
 

@@ -6,9 +6,14 @@ Cute, deterministic robot avatars for Go.
 
 **[Try the live playground →](https://southclaws.github.io/roboticon/)**
 
-**230,400 possible trait combinations:** 5 heads × 8 eyes × 6 mouths × 5 antenna
-choices × 4 ear choices × 4 accessory choices × 12 curated palettes. Optional
-features include “none”; accessories appear on about one third of robots.
+**1,061,683,200 possible trait combinations.** The original 230,400 combinations
+(5 heads × 8 eyes × 6 mouths × 5 antenna choices × 4 ear choices × 4 accessories ×
+12 palettes) now have 4 proportion presets × 4 face panels × 3 eye spacings ×
+3 eye heights × 4 cheek styles × 8 casing markings. All geometry and colors are
+curated; fine details become subtler at small sizes. Optional features include
+“none”; accessories appear on about one third of robots.
+
+![Curated robot variants, changing one trait at a time](docs/traits.png)
 
 ```go
 import "github.com/Southclaws/roboticon"

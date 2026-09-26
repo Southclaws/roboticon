@@ -168,7 +168,10 @@ func (r Robot) validate(size int) error {
 	if size < 1 || size > 2048 {
 		return fmt.Errorf("roboticon: size must be between 1 and 2048, got %d", size)
 	}
-	if r.Head > HeadSquircle || r.Eyes > EyesCurious || r.Mouth > MouthGrin || r.Antenna > AntennaSprout || r.Ears > EarsNubs || r.Accessory > AccessoryBadge {
+	if r.Head > HeadSquircle || r.Eyes > EyesCurious || r.Mouth > MouthGrin ||
+		r.Antenna > AntennaSprout || r.Ears > EarsNubs || r.Accessory > AccessoryHeart ||
+		r.Proportions > ProportionsBigHead || r.FacePanel > FacePanelWide || r.EyeSpacing > EyeSpacingWide ||
+		r.EyeHeight > EyeHeightLow || r.Cheeks > CheeksLines || r.Marking > MarkingTempleDots {
 		return fmt.Errorf("roboticon: invalid trait value")
 	}
 	return nil

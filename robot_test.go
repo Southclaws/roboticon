@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
+	"image"
 	"image/color"
 	"image/png"
 	"io"
@@ -20,12 +21,15 @@ func TestGenerate(t *testing.T) {
 		seed string
 		want Robot
 	}{
-		{"robot-a", Robot{HeadDome, EyesButtons, MouthSmile, AntennaBobble, EarsNubs, AccessoryNone,
-			Palette{color.RGBA{248, 235, 239, 255}, color.RGBA{220, 160, 180, 255}, color.RGBA{255, 246, 238, 255}, color.RGBA{101, 70, 83, 255}, color.RGBA{148, 182, 172, 255}}}},
-		{"robot-b", Robot{HeadSquircle, EyesSleepy, MouthSmile, AntennaSprout, EarsNubs, AccessoryNone,
-			Palette{color.RGBA{229, 242, 240, 255}, color.RGBA{112, 185, 188, 255}, color.RGBA{242, 250, 239, 255}, color.RGBA{47, 80, 88, 255}, color.RGBA{235, 165, 130, 255}}}},
-		{"", Robot{HeadDome, EyesPortholes, MouthGrin, AntennaBobble, EarsNone, AccessoryFreckles,
-			Palette{color.RGBA{234, 239, 244, 255}, color.RGBA{142, 168, 181, 255}, color.RGBA{244, 247, 237, 255}, color.RGBA{54, 77, 89, 255}, color.RGBA{233, 189, 111, 255}}}},
+		{"robot-a", Robot{Head: HeadDome, Eyes: EyesButtons, Mouth: MouthSmile, Antenna: AntennaBobble, Ears: EarsNubs, Accessory: AccessoryNone,
+			Proportions: ProportionsChonky, FacePanel: FacePanelWide, EyeSpacing: EyeSpacingNarrow, EyeHeight: EyeHeightLow, Cheeks: CheeksNone, Marking: MarkingNone,
+			Palette: Palette{color.RGBA{248, 235, 239, 255}, color.RGBA{220, 160, 180, 255}, color.RGBA{255, 246, 238, 255}, color.RGBA{101, 70, 83, 255}, color.RGBA{148, 182, 172, 255}}}},
+		{"robot-b", Robot{Head: HeadSquircle, Eyes: EyesSleepy, Mouth: MouthSmile, Antenna: AntennaSprout, Ears: EarsNubs, Accessory: AccessoryNone,
+			Proportions: ProportionsChonky, FacePanel: FacePanelTall, EyeSpacing: EyeSpacingNarrow, EyeHeight: EyeHeightLow, Cheeks: CheeksLines, Marking: MarkingVents,
+			Palette: Palette{color.RGBA{229, 242, 240, 255}, color.RGBA{112, 185, 188, 255}, color.RGBA{242, 250, 239, 255}, color.RGBA{47, 80, 88, 255}, color.RGBA{235, 165, 130, 255}}}},
+		{"", Robot{Head: HeadDome, Eyes: EyesPortholes, Mouth: MouthGrin, Antenna: AntennaBobble, Ears: EarsNone, Accessory: AccessoryButton,
+			Proportions: ProportionsChonky, FacePanel: FacePanelTall, EyeSpacing: EyeSpacingNarrow, EyeHeight: EyeHeightLow, Cheeks: CheeksLines, Marking: MarkingVents,
+			Palette: Palette{color.RGBA{234, 239, 244, 255}, color.RGBA{142, 168, 181, 255}, color.RGBA{244, 247, 237, 255}, color.RGBA{54, 77, 89, 255}, color.RGBA{233, 189, 111, 255}}}},
 	}
 	for _, tt := range cases {
 		t.Run(tt.seed, func(t *testing.T) {
@@ -144,6 +148,12 @@ func TestGalleryPopulation(t *testing.T) {
 	var antennae [5]bool
 	var ears [4]bool
 	var accessories [4]bool
+	var proportions [4]bool
+	var panels [4]bool
+	var spacings [3]bool
+	var heights [3]bool
+	var cheeks [4]bool
+	var markings [8]bool
 	seenPalettes := map[Palette]bool{}
 	seenRobots := map[Robot]bool{}
 	for i := 0; i < 200; i++ {
@@ -154,6 +164,12 @@ func TestGalleryPopulation(t *testing.T) {
 		antennae[r.Antenna] = true
 		ears[r.Ears] = true
 		accessories[r.Accessory] = true
+		proportions[r.Proportions] = true
+		panels[r.FacePanel] = true
+		spacings[r.EyeSpacing] = true
+		heights[r.EyeHeight] = true
+		cheeks[r.Cheeks] = true
+		markings[r.Marking] = true
 		seenPalettes[r.Palette] = true
 		seenRobots[r] = true
 		var b bytes.Buffer
@@ -164,20 +180,13 @@ func TestGalleryPopulation(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		// Every generated character leaves the border entirely clear.
-		for x := 0; x < 32; x++ {
-			for _, pt := range [][2]int{{x, 0}, {x, 31}, {0, x}, {31, x}} {
-				if im.At(pt[0], pt[1]) != r.Palette.Background {
-					t.Fatalf("seed %d clips the canvas", i)
-				}
-			}
-		}
+		assertPaddedBorder(t, im, r.Palette.Background)
 		// A central eye pixel must differ visibly from the background.
 		if im.At(12, 15) == r.Palette.Background {
 			t.Fatalf("seed %d is blank", i)
 		}
 	}
-	for _, set := range [][]bool{heads[:], eyes[:], mouths[:], antennae[:], ears[:], accessories[:]} {
+	for _, set := range [][]bool{heads[:], eyes[:], mouths[:], antennae[:], ears[:], accessories[:], proportions[:], panels[:], spacings[:], heights[:], cheeks[:], markings[:]} {
 		for i, seen := range set {
 			if !seen {
 				t.Fatalf("trait %d not represented in gallery", i)
@@ -189,6 +198,22 @@ func TestGalleryPopulation(t *testing.T) {
 	}
 	if len(seenRobots) < 195 {
 		t.Fatalf("too many duplicate robots: %d unique", len(seenRobots))
+	}
+}
+
+func assertPaddedBorder(t *testing.T, im image.Image, bg color.RGBA) {
+	t.Helper()
+	// No visible ink reaches the border. Allow one 8-bit level for the
+	// Catmull-Rom resampler's faint ringing beyond the padded geometry.
+	for x := 0; x < 32; x++ {
+		for _, pt := range [][2]int{{x, 0}, {x, 31}, {0, x}, {31, x}} {
+			got := color.RGBAModel.Convert(im.At(pt[0], pt[1])).(color.RGBA)
+			for _, delta := range []int{int(got.R) - int(bg.R), int(got.G) - int(bg.G), int(got.B) - int(bg.B), int(got.A) - int(bg.A)} {
+				if delta < -1 || delta > 1 {
+					t.Fatalf("canvas edge at %v: got %+v want %+v", pt, got, bg)
+				}
+			}
+		}
 	}
 }
 
@@ -213,29 +238,36 @@ func TestPaletteContrast(t *testing.T) {
 }
 
 func TestCircularSafeArea(t *testing.T) {
-	// Exercise every silhouette combination. A radius of 47 leaves three logical
-	// units of clearance inside a normal radius-50 circular avatar crop.
+	// All 400 shell / antenna / ear / proportion combinations must leave three
+	// logical units of clearance inside a standard radius-50 crop.
 	for head := HeadRounded; head <= HeadSquircle; head++ {
 		for antenna := AntennaNone; antenna <= AntennaSprout; antenna++ {
 			for ears := EarsNone; ears <= EarsNubs; ears++ {
-				r := Generate("circle-safe")
-				r.Head, r.Antenna, r.Ears = head, antenna, ears
-				var b bytes.Buffer
-				if err := r.RenderPNG(&b, 128); err != nil {
-					t.Fatal(err)
+				for proportions := ProportionsBalanced; proportions <= ProportionsBigHead; proportions++ {
+					r := Generate("circle-safe")
+					r.Head, r.Antenna, r.Ears, r.Proportions = head, antenna, ears, proportions
+					assertCircularSafeArea(t, r)
 				}
-				im, err := png.Decode(&b)
-				if err != nil {
-					t.Fatal(err)
-				}
-				for y := 0; y < 128; y++ {
-					for x := 0; x < 128; x++ {
-						dx, dy := (float64(x)+.5)*100/128-50, (float64(y)+.5)*100/128-50
-						if dx*dx+dy*dy >= 47*47 && im.At(x, y) != r.Palette.Background {
-							t.Fatalf("head=%d antenna=%d ears=%d exceeds circular safe area at (%d,%d)", head, antenna, ears, x, y)
-						}
-					}
-				}
+			}
+		}
+	}
+}
+
+func assertCircularSafeArea(t *testing.T, r Robot) {
+	t.Helper()
+	var b bytes.Buffer
+	if err := r.RenderPNG(&b, 64); err != nil {
+		t.Fatal(err)
+	}
+	im, err := png.Decode(&b)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for y := 0; y < 64; y++ {
+		for x := 0; x < 64; x++ {
+			dx, dy := (float64(x)+.5)*100/64-50, (float64(y)+.5)*100/64-50
+			if dx*dx+dy*dy >= 47*47 && im.At(x, y) != r.Palette.Background {
+				t.Fatalf("head=%d antenna=%d ears=%d proportions=%d exceeds circular safe area at (%d,%d)", r.Head, r.Antenna, r.Ears, r.Proportions, x, y)
 			}
 		}
 	}

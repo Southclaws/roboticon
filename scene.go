@@ -50,18 +50,21 @@ func (r Robot) scene(showBackground bool) scene {
 		// A quiet grounding shadow; the head still has ample breathing room.
 		s.rect(29, 86, 42, 3, 1.5, shade(p.Background, .94))
 	}
-	r.drawAntenna(&s, showBackground)
-	r.drawEars(&s)
-	r.drawHead(&s)
-	// Constant facial landmarks keep every combination comfortably inside its shell.
-	s.rect(24, 35, 52, 38, 13, shade(p.Body, .85))
-	s.rect(24, 34, 52, 37, 13, p.Face)
-	r.drawEyes(&s)
-	r.drawMouth(&s)
-	r.drawAccessory(&s)
-	// Two tiny casing rivets give even the simplest face a machine-like identity.
-	s.circle(35, 77, 1.2, shade(p.Body, .78))
-	s.circle(65, 77, 1.2, shade(p.Body, .78))
+	var body, face scene
+	r.drawAntenna(&body, showBackground)
+	r.drawEars(&body)
+	r.drawHead(&body)
+	r.drawFacePanel(&face)
+	r.drawEyes(&face)
+	r.drawMouth(&face)
+	r.drawCheeks(&face)
+	layout := proportionPresets[r.Proportions]
+	face.transform(layoutTransform{cx: 50, cy: 53, sx: layout.faceWidth, sy: layout.faceHeight})
+	body = append(body, face...)
+	r.drawMarking(&body)
+	r.drawAccessory(&body)
+	body.transform(layoutTransform{cx: 50, cy: 54, sx: layout.headWidth, sy: layout.headHeight})
+	s = append(s, body...)
 	return s
 }
 
@@ -80,7 +83,10 @@ func (r Robot) drawHead(s *scene) {
 		s.filled(p.Body, move(50, 24), cubic(79, 24, 83, 29, 83, 53), cubic(83, 78, 79, 83, 50, 83), cubic(21, 83, 17, 78, 17, 53), cubic(17, 29, 21, 24, 50, 24), closePath())
 	}
 	// Short soft highlight, not a hard outline.
-	s.rect(34, 28, 12, 2, 1, color.RGBA{90, 90, 90, 90})
+	if r.Marking != MarkingForeheadPanel {
+		y := [...]float64{28, 30, 25, 26, 27}[r.Head]
+		s.rect(44, y, 12, 2, 1, color.RGBA{90, 90, 90, 90})
+	}
 }
 
 func (r Robot) drawAntenna(s *scene, showBackground bool) {
@@ -129,7 +135,9 @@ func (r Robot) drawEars(s *scene) {
 
 func (r Robot) drawEyes(s *scene) {
 	p := r.Palette
-	for i, x := range []float64{38, 62} {
+	start := len(*s)
+	spacing := [...]float64{12, 10.5, 13.5}[r.EyeSpacing]
+	for i, x := range []float64{50 - spacing, 50 + spacing} {
 		switch r.Eyes {
 		case EyesDots:
 			s.rect(x-3, 43, 6, 10, 3, p.Detail)
@@ -159,6 +167,7 @@ func (r Robot) drawEyes(s *scene) {
 			s.circle(x-1, 46.5, 1.2, p.Face)
 		}
 	}
+	(*s)[start:].transform(layoutTransform{sx: 1, sy: 1, dy: [...]float64{0, -1.5, 1.5}[r.EyeHeight]})
 }
 
 func (r Robot) drawMouth(s *scene) {
@@ -186,16 +195,13 @@ func (r Robot) drawMouth(s *scene) {
 func (r Robot) drawAccessory(s *scene) {
 	p := r.Palette
 	switch r.Accessory {
-	case AccessoryBlush:
-		for _, x := range []float64{31, 64} {
-			s.rect(x, 56, 5, 2.8, 1.4, p.Accent)
-		}
-	case AccessoryFreckles:
-		for _, x := range []float64{31, 34, 66, 69} {
-			s.circle(x, 57.5, .8, p.Accent)
-		}
 	case AccessoryBadge:
-		s.rect(46, 75, 8, 4, 2, p.Accent)
-		s.circle(48.5, 77, .9, p.Face)
+		s.rect(57, 75, 8, 4, 2, p.Accent)
+		s.circle(59.5, 77, .9, p.Face)
+	case AccessoryButton:
+		s.circle(61, 77, 2.5, p.Accent)
+		s.circle(61, 77, 1, p.Face)
+	case AccessoryHeart:
+		s.filled(p.Accent, move(61, 75.5), cubic(57, 72, 55.5, 77, 61, 80), cubic(66.5, 77, 65, 72, 61, 75.5), closePath())
 	}
 }
