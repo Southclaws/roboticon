@@ -1,6 +1,6 @@
 # Roboticon
 
-Cute, deterministic robot avatars for Go. Same seed, same little friend.
+Cute, deterministic robot avatars for Go.
 
 ![Twelve robot avatars](docs/examples.png)
 
